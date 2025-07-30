@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # Redis service
+  redis:
+    image: redis:7-alpine
+    container_name: quizmaster-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - quizmaster-network
+
+  # Flask web application
+  web:
+    build: .
+    container_name: quizmaster-web
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=main.py
+      - FLASK_ENV=development
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - CACHE_REDIS_URL=redis://redis:6379/3
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - quizmaster-network
+
+  # Celery worker
+  celery-worker:
+    build: .
+    container_name: quizmaster-celery-worker
+    command: celery -A main.celery worker --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - CACHE_REDIS_URL=redis://redis:6379/3
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - web
+    restart: unless-stopped
+    networks:
+      - quizmaster-network
+
+  # Celery beat scheduler
+  celery-beat:
+    build: .
+    container_name: quizmaster-celery-beat
+    command: celery -A main.celery beat --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - CACHE_REDIS_URL=redis://redis:6379/3
+    volumes:
+      - .:/app
+      - celery_beat_data:/app/celerybeat-schedule
+    depends_on:
+      - redis
+      - web
+    restart: unless-stopped
+    networks:
+      - quizmaster-network
+
+  # Celery flower (monitoring)
+  celery-flower:
+    build: .
+    container_name: quizmaster-celery-flower
+    command: celery -A main.celery flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - CACHE_REDIS_URL=redis://redis:6379/3
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - web
+      - celery-worker
+    restart: unless-stopped
+    networks:
+      - quizmaster-network
+
+volumes:
+  redis_data:
+  celery_beat_data:
+
+networks:
+  quizmaster-network:
+    driver: bridge 
