@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }} - Quiz Master V1{% endblock %}
+
+{% block content %}
+<div id="vue-user-take-quiz">
+    <div class="container mt-4">
+        <h1 class="mb-4">{{ quiz.title }}</h1>
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Quiz Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Subject:</strong> {{ quiz.chapter.subject.name }}</p>
+                <p><strong>Chapter:</strong> {{ quiz.chapter.name }}</p>
+                <p><strong>Time Limit:</strong> {% if quiz.time_limit %}{{ quiz.time_limit }} minutes{% else %}No time limit{% endif %}</p>
+                <p><strong>Pass Percentage:</strong> {{ quiz.pass_percentage }}%</p>
+                <p><strong>Total Questions:</strong> {{ quiz.questions|length }}</p>
+
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Important:</strong> Once you start this quiz, you must complete it. Leaving the page or refreshing will automatically submit your answers.
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('quiz_list') }}" class="btn btn-secondary me-2">Back to Quizzes</a>
+                    <a href="{{ url_for('start_quiz_attempt', quiz_id=quiz.id) }}" class="btn btn-primary btn-start-quiz"><i class="fas fa-play-circle me-2"></i>Start Quiz</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vue-app.js') }}"></script>
+<script>
+    // Add quiz start confirmation
+    document.addEventListener('DOMContentLoaded', function() {
+        const startButton = document.querySelector('.btn-start-quiz');
+        if (startButton) {
+            startButton.addEventListener('click', function(e) {
+                if (!confirm('Are you ready to start the quiz? Once started, you must complete it.')) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

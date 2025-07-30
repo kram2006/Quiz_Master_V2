@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Quiz Master V1{% endblock %}
+
+{% block content %}
+<div id="vue-admin-dashboard">
+<h1 class="mb-4">Admin Dashboard</h1>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4">{{ users_count }}</h1>
+                <h5 class="card-title">Users</h5>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-primary">Manage Users</a>
+            </div>
+        </div>
+
+<!-- Demo data is now generated automatically when the database is empty -->
+
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4">{{ subjects_count }}</h1>
+                <h5 class="card-title">Subjects</h5>
+                <a href="{{ url_for('admin_subjects') }}" class="btn btn-primary">Manage Subjects</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4">{{ quizzes_count }}</h1>
+                <h5 class="card-title">Quizzes</h5>
+                <a href="{{ url_for('admin_quizzes') }}" class="btn btn-primary">Manage Quizzes</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4">{{ attempts_count }}</h1>
+                <h5 class="card-title">Attempts
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+<br>
+    <a style="margin-top:5px;" class="btn btn-primary" href="{{ url_for('admin_attempts') }}">View Attempts</a>
+{% endif %}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Quick Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('add_subject') }}" class="btn btn-outline-primary w-100 p-3">
+                    <i class="bi bi-plus-circle"></i> Add New Subject
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('add_chapter') }}" class="btn btn-outline-primary w-100 p-3">
+                    <i class="bi bi-plus-circle"></i> Add New Chapter
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('add_quiz') }}" class="btn btn-outline-primary w-100 p-3">
+                    <i class="bi bi-plus-circle"></i> Add New Quiz
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="{{ url_for('send_monthly_reports') }}" class="btn btn-outline-gold w-100 p-3" 
+                   onclick="return confirm('Send monthly performance reports to all users?')">
+                    <i class="bi bi-envelope"></i> Send Monthly Reports
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vue-app.js') }}"></script>
+{% endblock %}

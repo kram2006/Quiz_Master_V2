@@ -1,0 +1,94 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }} - Quiz Master V1{% endblock %}
+
+{% block content %}
+<div id="vue-user-attempt-quiz">
+<div class="container mt-4">
+    <h1 class="mb-4">{{ quiz.title }}</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Quiz Information</h5>
+            {% if quiz.time_limit %}
+            <div class="timer-display">
+                Time Remaining: <span id="timer" class="badge bg-warning text-dark">{{ quiz.time_limit }}:00</span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <p><strong>Subject:</strong> {{ quiz.chapter.subject.name }}</p>
+            <p><strong>Chapter:</strong> {{ quiz.chapter.name }}</p>
+            <p class="mb-0"><strong>Total Questions:</strong> {{ quiz.questions|length }}</p>
+        </div>
+    </div>
+    
+    <form method="POST" action="{{ url_for('submit_quiz', quiz_id=quiz.id) }}" id="quiz-form">
+        {% for question in quiz.questions %}
+        <div class="card mb-4 question-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Question {{ loop.index }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="question-text">{{ question.text }}</p>
+                <div class="options">
+                    {% for option in question.options %}
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="option_{{ option.id }}" value="{{ option.id }}" required>
+                        <label class="form-check-label" for="option_{{ option.id }}">
+                            {{ option.text }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="d-flex justify-content-end mb-4">
+            <button type="submit" class="btn btn-primary">Submit Quiz</button>
+        </div>
+    </form>
+    <!-- Timer display -->
+    {% if quiz.time_limit %}
+    <!-- Removed floating blue timer -->
+    {% endif %}
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Prevent going back to avoid abandoned quiz attempts
+    history.pushState(null, null, location.href);
+    window.onpopstate = function() {
+        history.go(1);
+        alert("Please complete and submit the quiz. Navigating away will auto-submit your current answers.");
+    };
+    // Auto-submit form when user tries to close window or navigate away
+    window.addEventListener('beforeunload', function(e) {
+        document.getElementById('quiz-form').submit();
+        var confirmationMessage = 'Your quiz will be submitted if you leave this page.';
+        e.returnValue = confirmationMessage;
+        return confirmationMessage;
+    });
+</script>
+{% if quiz.time_limit %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let timeLimit = {{ quiz.time_limit * 60 }};
+        let timerInterval = setInterval(function() {
+            timeLimit--;
+            let minutes = Math.floor(timeLimit / 60);
+            let seconds = timeLimit % 60;
+            document.getElementById('timer').textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+            if (timeLimit <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('quiz-form').submit();
+            }
+        }, 1000);
+    });
+</script>
+{% endif %}
+{% endblock %}

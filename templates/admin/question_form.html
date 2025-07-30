@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Quiz Master V1{% endblock %}
+
+{% block content %}
+<div id="vue-admin-question-form">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ title }}</h1>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Quiz Information</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Title:</strong> {{ quiz.title }}</p>
+        <p><strong>Subject:</strong> {{ quiz.chapter.subject.name }}</p>
+        <p><strong>Chapter:</strong> {{ quiz.chapter.name }}</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Question Details</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.text.label(class="form-label") }}
+                {{ form.text(class="form-control", rows=3) }}
+                {% if form.text.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.text.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.points.label(class="form-label") }}
+                {{ form.points(class="form-control") }}
+                <small class="form-text text-muted">Points awarded for correct answer</small>
+                {% if form.points.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.points.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin_questions', quiz_id=quiz.id) }}" class="btn btn-secondary">Cancel</a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vue-app.js') }}"></script>
+{% endblock %}

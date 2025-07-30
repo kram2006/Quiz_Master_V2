@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Quiz Master V1{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ title }}</h1>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Question Information</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Quiz:</strong> {{ question.quiz.title }}</p>
+        <p><strong>Question:</strong> {{ question.text }}</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Option Details</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                                {{ form.text.label(class="form-label") }}
+                {{ form.text(class="form-control", rows=2) }}
+                {% if form.text.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.text.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3 form-check">
+                {{ form.is_correct(class="form-check-input") }}
+                {{ form.is_correct.label(class="form-check-label") }}
+                <small class="form-text text-muted d-block">Check this box if this is the correct answer</small>
+                {% if form.is_correct.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.is_correct.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin_options', question_id=question.id) }}" class="btn btn-secondary">Cancel</a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Quiz Attempts{% endblock %}
+
+{% block content %}
+<div id="vue-admin-attempts">
+    <div class="container mt-4">
+        <h1 class="mb-4">Quiz Attempts</h1>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div></div>
+            <a href="{{ url_for('download_admin_performance') }}" class="btn btn-gold">
+                <i class="fas fa-download me-2"></i>Download Performance Report
+            </a>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Filter Attempts</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-2">
+                        <label for="subject_id" class="form-label">Subject</label>
+                        <select class="form-select" id="subject_id" name="subject_id">
+                            <option value="">All Subjects</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.id }}" {% if subject_id == subject.id %}selected{% endif %}>
+                                {{ subject.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="chapter_id" class="form-label">Chapter</label>
+                        <select class="form-select" id="chapter_id" name="chapter_id">
+                            <option value="">All Chapters</option>
+                            {% for chapter in chapters %}
+                            <option value="{{ chapter.id }}" {% if chapter_id == chapter.id %}selected{% endif %}>
+                                {{ chapter.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="quiz_id" class="form-label">Quiz</label>
+                        <select class="form-select" id="quiz_id" name="quiz_id">
+                            <option value="">All Quizzes</option>
+                            {% for quiz in quizzes %}
+                            <option value="{{ quiz.id }}" {% if quiz_id == quiz.id %}selected{% endif %}>
+                                {{ quiz.title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="user_id" class="form-label">User</label>
+                        <select class="form-select" id="user_id" name="user_id">
+                            <option value="">All Users</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}" {% if user_id == user.id %}selected{% endif %}>
+                                {{ user.username }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">All</option>
+                            <option value="pass" {% if status == 'pass' %}selected{% endif %}>Pass</option>
+                            <option value="fail" {% if status == 'fail' %}selected{% endif %}>Fail</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        <a href="{{ url_for('admin_attempts') }}" class="btn btn-secondary">Reset</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Attempt Results</h5>
+            </div>
+            <div class="card-body">
+                {% if attempt_results %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Quiz</th>
+                                <th>Subject</th>
+                                <th>Chapter</th>
+                                <th>Raw Score</th>
+                                <th>Percentage</th>
+                                <th>Status</th>
+                                <th>Date/Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in attempt_results %}
+                            <tr>
+                                <td>{{ result.user.name }}</td>
+                                <td>{{ result.quiz.title }}</td>
+                                <td>{{ result.subject.name }}</td>
+                                <td>{{ result.chapter.name }}</td>
+                                <td>{{ result.attempt.score }}/{{ result.attempt.total_questions }}</td>
+                                <td>{{ result.percentage|round(1) }}%</td>
+                                <td>
+                                    {% if result.passed %}
+                                    <span class="badge bg-gold">PASS</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">FAIL</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ result.attempt.date_taken.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('view_result', attempt_id=result.attempt.id) }}" class="btn btn-sm btn-info">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No quiz attempts found matching the selected criteria.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vue-app.js') }}"></script>
+{% endblock %}

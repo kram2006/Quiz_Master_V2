@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Analysis - Quiz Master V1{% endblock %}
+
+{% block styles %}
+<style>
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .chart-container {
+        position: relative;
+        margin: auto;
+        height: 300px;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="vue-user-analysis">
+    <div class="container">
+        <h2 class="display-6 mb-4">Your Performance Analysis</h2>
+        
+        <!-- Stats Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card card">
+                    <div class="card-body text-center">
+                        <h3 class="stat-value">{{ total_quizzes }}</h3>
+                        <p class="stat-label">Quizzes Taken</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card">
+                    <div class="card-body text-center">
+                        <h3 class="stat-value">{{ avg_score }}%</h3>
+                        <p class="stat-label">Average Score</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card">
+                    <div class="card-body text-center">
+                        <h3 class="stat-value">{{ highest_score }}%</h3>
+                        <p class="stat-label">Highest Score</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card">
+                    <div class="card-body text-center">
+                        <h3 class="stat-value">{{ total_time }}</h3>
+                        <p class="stat-label">Time Spent</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Over Time -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Performance Over Time</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject Performance -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Performance by Subject</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="subjectChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Time Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="timeDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Quiz</th>
+                                <th>Subject</th>
+                                <th>Score</th>
+                                <th>Time Taken</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in recent_attempts %}
+                            <tr>
+                                <td>{{ attempt.quiz_name }}</td>
+                                <td>{{ attempt.subject }}</td>
+                                <td>
+                                    <span class="badge {% if attempt.score >= 70 %}badge-gold{% elif attempt.score >= 40 %}badge-warning{% else %}badge-danger{% endif %}">
+                                        {{ attempt.score }}%
+                                    </span>
+                                </td>
+                                <td>{{ attempt.time_taken }}</td>
+                                <td>{{ attempt.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/vue-app.js') }}"></script>
+<script>
+// Performance Over Time Chart
+const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+new Chart(performanceCtx, {
+    type: 'line',
+    data: {
+        labels: {{ dates|tojson }},
+        datasets: [{
+            label: 'Quiz Scores',
+            data: {{ scores|tojson }},
+            borderColor: 'rgb(124, 58, 237)',
+            backgroundColor: 'rgba(124, 58, 237, 0.1)',
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+
+// Subject Performance Chart
+const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+new Chart(subjectCtx, {
+    type: 'radar',
+    data: {
+        labels: {{ subject_names|tojson }},
+        datasets: [{
+            label: 'Average Score',
+            data: {{ subject_scores|tojson }},
+            backgroundColor: 'rgba(124, 58, 237, 0.2)',
+            borderColor: 'rgb(124, 58, 237)',
+            pointBackgroundColor: 'rgb(124, 58, 237)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(124, 58, 237)'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            r: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+
+// Time Distribution Chart
+const timeCtx = document.getElementById('timeDistributionChart').getContext('2d');
+new Chart(timeCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ subject_names|tojson }},
+        datasets: [{
+            data: {{ subject_times|tojson }},
+            backgroundColor: [
+                'rgba(124, 58, 237, 0.8)',
+                'rgba(5, 150, 105, 0.8)',
+                'rgba(244, 63, 94, 0.8)',
+                'rgba(251, 146, 60, 0.8)',
+                'rgba(14, 165, 233, 0.8)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right'
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 

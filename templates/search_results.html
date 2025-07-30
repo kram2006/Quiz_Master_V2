@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Search Results for "{{ query }}"</h2>
+    {% if not query %}
+        <div class="alert alert-info">Please enter a search term.</div>
+    {% else %}
+        {% if not results.quizzes and not results.subjects and not results.users %}
+            <div class="alert alert-warning">No results found.</div>
+        {% endif %}
+        {% if results.quizzes %}
+            <h4>Quizzes</h4>
+            <ul class="list-group mb-4">
+                {% for quiz in results.quizzes %}
+                    <li class="list-group-item">
+                        <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}"><strong>{{ quiz.title }}</strong></a>
+                        <br>
+                        <small>{{ quiz.description }}</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if results.subjects %}
+            <h4>Subjects</h4>
+            <ul class="list-group mb-4">
+                {% for subject in results.subjects %}
+                    <li class="list-group-item">
+                        <strong>{{ subject.name }}</strong>
+                        <br>
+                        <small>{{ subject.description }}</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if results.users %}
+            <h4>Users</h4>
+            <ul class="list-group mb-4">
+                {% for user in results.users %}
+                    <li class="list-group-item">
+                        <strong>{{ user.name }}</strong> &lt;{{ user.email }}&gt;
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %} 

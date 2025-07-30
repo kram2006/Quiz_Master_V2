@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Available Quizzes - Quiz Master V1{% endblock %}
+
+{% block content %}
+<div id="vue-user-quiz-list">
+<h1 class="mb-4">Available Quizzes</h1>
+
+{% if subjects %}
+    <div class="accordion" id="subjectsAccordion">
+        {% for subject in subjects %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ subject.id }}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ subject.id }}">
+                        {{ subject.name }}
+                    </button>
+                </h2>
+                <div id="collapse{{ subject.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ subject.id }}" data-bs-parent="#subjectsAccordion">
+                    <div class="accordion-body">
+                        <p>{{ subject.description }}</p>
+
+                        {% if subject.chapters %}
+                            {% for chapter in subject.chapters %}
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h5>{{ chapter.name }}</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>{{ chapter.description }}</p>
+
+                                        {% if chapter.quizzes %}
+                                            <div class="list-group">
+                                                {% for quiz in chapter.quizzes %}
+                                                    {% set attempted = quiz.attempts|selectattr('user_id', 'eq', current_user.id)|selectattr('is_completed', 'eq', true)|list|length > 0 %}
+                                                    <div class="list-group-item {% if attempted %}list-group-item-secondary{% endif %}">
+                                                        <div class="d-flex w-100 justify-content-between">
+                                                            <h5 class="mb-1">{{ quiz.title }}</h5>
+                                                            {% if quiz.time_limit %}
+                                                                <small>Time: {{ quiz.time_limit }} min</small>
+                                                            {% else %}
+                                                                <small>No time limit</small>
+                                                            {% endif %}
+                                                        </div>
+                                                        <p class="mb-1">{{ quiz.description }}</p>
+                                                        <small>Chapter: {{ quiz.chapter.name }}</small>
+                                                        <div class="mt-2">
+                                                            {% if attempted %}
+                                                                {% set attempt = quiz.attempts|selectattr('user_id', 'eq', current_user.id)|selectattr('is_completed', 'eq', true)|list|first %}
+                                                                <span class="badge bg-info">Already attempted</span>
+                                                                <a href="{{ url_for('quiz_results', attempt_id=attempt.id) }}" class="btn btn-sm btn-outline-primary">View Results</a>
+                                                            {% else %}
+                                                                <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-primary">Take Quiz</a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <p class="text-center">No quizzes available for this chapter.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-center">No chapters available for this subject.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">No subjects available at the moment.</div>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vue-app.js') }}"></script>
+{% endblock %}

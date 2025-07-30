@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Results - Quiz Master V1{% endblock %}
+
+{% block content %}
+<div id="vue-user-results">
+<h1 class="mb-4">Quiz Results</h1>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">{{ attempt.quiz.title }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Date Taken:</strong> {{ attempt.date_taken.strftime('%d/%m/%Y %H:%M') }}</p>
+                <p><strong>Subject:</strong> {{ attempt.quiz.chapter.subject.name }}</p>
+                <p><strong>Chapter:</strong> {{ attempt.quiz.chapter.name }}</p>
+            </div>
+            <div class="col-md-6">
+                <div class="text-center">
+                    <div class="display-1 fw-bold">{{ "%.1f"|format(attempt.score) }}%</div>
+                    {% if attempt.passed %}
+                        <div class="badge bg-gold fs-5 p-2">PASSED</div>
+                    {% else %}
+                        <div class="badge bg-danger fs-5 p-2">FAILED</div>
+                    {% endif %}
+                    <p class="mt-2">(Pass mark: {{ attempt.quiz.pass_percentage }}%)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-3">Question Review</h2>
+
+{% for response in attempt.responses %}
+    <div class="card mb-4">
+        <div class="card-header {% if response.selected_option.is_correct %}bg-gold{% else %}bg-danger{% endif %} text-dark">
+            <h5 class="mb-0">Question {{ loop.index }}</h5>
+        </div>
+        <div class="card-body">
+            <p class="question-text">{{ response.question.text }}</p>
+            
+            <div class="options-list">
+                {% for option in response.question.options %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" 
+                               {% if response.option_id == option.id %}checked{% endif %} 
+                               disabled>
+                        <label class="form-check-label {% if option.is_correct %}text-gold fw-bold{% elif response.option_id == option.id %}text-danger{% endif %}">
+                            {{ option.text }}
+                            {% if option.is_correct %}
+                                <span class="badge bg-gold ms-2">Correct Answer</span>
+                            {% endif %}
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<div class="text-center mt-4 mb-4">
+    <a href="{{ url_for('quiz_list') }}" class="btn btn-primary">Take Another Quiz</a>
+    <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vue-app.js') }}"></script>
+{% endblock %}

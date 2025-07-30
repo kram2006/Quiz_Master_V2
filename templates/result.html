@@ -1,0 +1,72 @@
+
+{% extends "base.html" %}
+
+{% block title %}Quiz Result - Quiz Master V1{% endblock %}
+
+{% block content %}
+<div id="vue-result">
+<div class="container mt-4">
+    <h1 class="mb-4">Quiz Result</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Quiz Information</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Quiz Title:</strong> {{ quiz.title }}</p>
+            <p><strong>Subject:</strong> {{ quiz.chapter.subject.name }}</p>
+            <p><strong>Chapter:</strong> {{ quiz.chapter.name }}</p>
+            <p><strong>User:</strong> {{ user.name }}</p>
+            <p><strong>Date Taken:</strong> {{ attempt.date_taken.strftime('%d/%m/%Y %H:%M') }}</p>
+            <p><strong>Score:</strong> {{ attempt.score }}%</p>
+            <p><strong>Result:</strong> 
+                {% if attempt.passed %}
+                <span class="badge bg-gold">PASS</span>
+                {% else %}
+                <span class="badge bg-danger">FAIL</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Detailed Results</h5>
+        </div>
+        <div class="card-body">
+            {% for response in responses %}
+            <div class="card mb-3 {% if response.selected_option.is_correct %}border-gold{% else %}border-danger{% endif %}">
+                <div class="card-header {% if response.selected_option.is_correct %}bg-gold text-dark{% else %}bg-danger text-white{% endif %}">
+                    <h6 class="mb-0">Question {{ loop.index }}</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Question:</strong> {{ response.question.text }}</p>
+                    <p><strong>Your Answer:</strong> {{ response.selected_option.text }}</p>
+                    {% if not response.selected_option.is_correct %}
+                        {% for option in response.question.options %}
+                            {% if option.is_correct %}
+                                <p><strong>Correct Answer:</strong> {{ option.text }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{{ url_for('quiz_list') }}" class="btn btn-primary">Back to Quizzes</a>
+        {% if current_user.is_admin %}
+            <a href="{{ url_for('admin_attempts') }}" class="btn btn-secondary">Back to Attempts</a>
+        {% else %}
+            <a href="{{ url_for('quiz_history') }}" class="btn btn-secondary">Back to History</a>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vue-app.js') }}"></script>
+{% endblock %}

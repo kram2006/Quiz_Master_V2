@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Quiz Master V1{% endblock %}
+
+{% block content %}
+<div id="vue-user-dashboard">
+<h1 class="mb-4">Welcome, {{ current_user.name }}!</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Available Quizzes</h5>
+            </div>
+            <div class="card-body">
+                {% if available_quizzes %}
+                    <div class="list-group">
+                        {% for quiz in available_quizzes %}
+                            <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ quiz.title }}</h5>
+                                    {% if quiz.time_limit %}
+                                        <small>Time: {{ quiz.time_limit }} min</small>
+                                    {% else %}
+                                        <small>No time limit</small>
+                                    {% endif %}
+                                </div>
+                                <p class="mb-1">{{ quiz.description }}</p>
+                                <small>Subject: {{ quiz.chapter.subject.name }} - Chapter: {{ quiz.chapter.name }}</small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center">No quizzes available at the moment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Recent Attempts</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_attempts %}
+                    <div class="list-group">
+                        {% for attempt in recent_attempts %}
+                            <a href="{{ url_for('quiz_results', attempt_id=attempt.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ attempt.quiz.title }}</h5>
+                                    <small>{{ attempt.date_taken.strftime('%d/%m/%Y') }}</small>
+                                </div>
+                                {% if attempt.is_completed %}
+                                    <p class="mb-1">Score: {{ "%.1f"|format(attempt.score) }}%</p>
+                                    {% if attempt.passed %}
+                                        <span class="badge bg-gold">Passed</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Failed</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Incomplete</span>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center">You haven't attempted any quizzes yet.</p>
+                {% endif %}
+                <div class="mt-3 text-center">
+                    <a href="{{ url_for('quiz_history') }}" class="btn btn-outline-primary btn-sm">View All History</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/vue-app.js') }}"></script>
+{% endblock %}
